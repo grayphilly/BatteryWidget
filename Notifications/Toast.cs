@@ -1,47 +1,46 @@
 // Toast.cs
-// Thin wrapper over the Windows App SDK app-notification API.
+// Shows toast notifications via the classic WinRT ToastNotificationManager.
+// For a packaged app this works directly off the package identity — no
+// AppNotificationManager.Register() (which failed here with 0x80070490) and no
+// activator-CLSID manifest wiring required.
 
-using Microsoft.Windows.AppNotifications;
-using Microsoft.Windows.AppNotifications.Builder;
+using Windows.Data.Xml.Dom;
+using Windows.UI.Notifications;
 
 namespace BatteryWidget.Notifications;
 
 public static class Toast
 {
-    private static bool _registered;
-
-    /// <summary>Register the notification manager once (required before Show).</summary>
-    public static void EnsureRegistered()
-    {
-        if (_registered) return;
-        try
-        {
-            AppNotificationManager.Default.Register();
-            _registered = true;
-        }
-        catch
-        {
-            // Registration can fail when run without package identity; Show
-            // will then no-op rather than crash the monitor.
-        }
-    }
+    public static void EnsureRegistered() { /* no-op: classic API needs no registration */ }
 
     public static void Show(string title, string body, string? glyph = null)
     {
         try
         {
-            EnsureRegistered();
-            if (!_registered) return;
+            var headline = glyph is null ? title : $"{glyph} {title}";
 
-            var builder = new AppNotificationBuilder()
-                .AddText(glyph is null ? title : $"{glyph} {title}")
-                .AddText(body);
+            var xml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText02);
+            var texts = xml.GetElementsByTagName("text");
+            texts[0].AppendChild(xml.CreateTextNode(headline));
+            texts[1].AppendChild(xml.CreateTextNode(body));
 
-            AppNotificationManager.Default.Show(builder.BuildNotification());
+            ToastNotificationManager.CreateToastNotifier().Show(new ToastNotification(xml));
+            Log($"Show OK: {title}");
         }
-        catch
+        catch (Exception ex)
         {
-            // Never let a notification failure take down the monitor loop.
+            Log("Show FAILED: " + ex);
         }
+    }
+
+    private static void Log(string msg)
+    {
+        try
+        {
+            var path = Path.Combine(
+                Path.GetDirectoryName(NotificationSettings.SettingsPath)!, "toast.log");
+            File.AppendAllText(path, $"{DateTime.Now:HH:mm:ss}  {msg}{Environment.NewLine}");
+        }
+        catch { /* ignore */ }
     }
 }

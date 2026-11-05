@@ -46,9 +46,16 @@
           <com:ComServer>
             <com:ExeServer Executable="BatteryWidgetProvider.exe" DisplayName="BatteryWidgetProvider">
               <com:Class Id="55489218-3DF6-4B99-8940-1BD2EA27B12A" DisplayName="Battery Widget Provider" />
+              <!-- Toast notification activator (required so AppNotificationManager.Register() succeeds). -->
+              <com:Class Id="9683EB0C-5350-43C0-BFF8-719FD03857B7" DisplayName="Battery Widget Toast Activator" />
             </com:ExeServer>
           </com:ComServer>
         </com:Extension>
+
+        <!-- Declares the toast activator CLSID for Windows App SDK notifications. -->
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation ToastActivatorCLSID="9683EB0C-5350-43C0-BFF8-719FD03857B7" />
+        </desktop:Extension>
 
         <!-- Always-on battery monitor: launched at logon with no args -> runs
              the alert loop. User can toggle it in Task Manager > Startup apps. -->

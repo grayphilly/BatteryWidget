@@ -92,7 +92,7 @@
                   "size": "extraLarge",
                   "weight": "bolder",
                   "horizontalAlignment": "right",
-                  "color": "${if(isLow, 'attention', if(charging, 'good', 'default'))}"
+                  "color": "${if(isLow, 'attention', if(isWarn, 'warning', 'good'))}"
                 }
               ]
             }

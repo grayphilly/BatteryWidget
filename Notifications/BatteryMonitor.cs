@@ -20,6 +20,7 @@ public sealed class BatteryMonitor
     }
 
     private readonly Dictionary<string, AlertState> _state = new(StringComparer.OrdinalIgnoreCase);
+    private string? _lastSettingsKey;
 
     public async Task RunAsync(CancellationToken token)
     {
@@ -31,6 +32,22 @@ public sealed class BatteryMonitor
             try
             {
                 var settings = NotificationSettings.Load();
+
+                // When the user changes a setting (e.g. lowers the threshold),
+                // re-arm alerts so a device already below the new threshold gets
+                // a fresh notification instead of staying "already notified".
+                var key = $"{settings.LowThresholdPercent}|{settings.NotifyLowPeripherals}|" +
+                          $"{settings.NotifyLowPc}|{settings.NotifyFullPeripherals}|{settings.NotifyFullPc}";
+                if (key != _lastSettingsKey)
+                {
+                    if (_lastSettingsKey is not null)
+                    {
+                        _state.Clear();
+                        Log($"settings changed (threshold={settings.LowThresholdPercent}); alerts re-armed");
+                    }
+                    _lastSettingsKey = key;
+                }
+
                 var snapshot = await BatteryReader.GetSnapshotAsync();
                 Evaluate(snapshot, settings);
             }

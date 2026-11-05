@@ -13,8 +13,12 @@ public static class BatteryReader
         PropertyNamingPolicy = null // property names are set explicitly via attributes
     };
 
+    // How far above the threshold still shows yellow (vs green).
+    private const int WarnBand = 15;
+
     public static async Task<BatterySnapshot> GetSnapshotAsync()
     {
+        var settings = NotificationSettings.Load();
         var snapshot = new BatterySnapshot
         {
             Updated = DateTime.Now.ToString("t")
@@ -41,7 +45,7 @@ public static class BatteryReader
                 .ToList();
 
             // Phones keep a persistent link even when "not in use"; hide unless opted in.
-            if (!NotificationSettings.Load().ShowPhones)
+            if (!settings.ShowPhones)
             {
                 peripherals = peripherals
                     .Where(p => !DeviceGlyph.IsPhoneOrTablet(p.Glyph))
@@ -53,6 +57,18 @@ public static class BatteryReader
         catch
         {
             // Peripheral read is best-effort; PC data still renders.
+        }
+
+        // Color tiers relative to the user's threshold: red at/below it, yellow
+        // within the warning band above it, green otherwise (and when charging).
+        int threshold = settings.LowThresholdPercent;
+        foreach (var d in snapshot.Devices)
+        {
+            if (d.Percent is { } p && !d.Charging)
+            {
+                d.IsLow = p <= threshold;
+                d.IsWarn = !d.IsLow && p <= threshold + WarnBand;
+            }
         }
 
         return snapshot;

@@ -47,9 +47,14 @@ public sealed class BatteryEntry
     [JsonPropertyName("percentText")]
     public string PercentText => Percent.HasValue ? $"{Percent.Value}%" : "—";
 
-    /// <summary>true when Percent is known and below the low-battery threshold.</summary>
+    /// <summary>At/below the user's low threshold (not charging) → red. Set by
+    /// BatteryReader, which knows the current threshold.</summary>
     [JsonPropertyName("isLow")]
-    public bool IsLow => Percent.HasValue && Percent.Value <= 20 && !Charging;
+    public bool IsLow { get; set; }
+
+    /// <summary>Within the warning band just above the threshold → yellow.</summary>
+    [JsonPropertyName("isWarn")]
+    public bool IsWarn { get; set; }
 
     /// <summary>Glyph (Segoe Fluent / emoji) hint for the row.</summary>
     [JsonPropertyName("glyph")]
