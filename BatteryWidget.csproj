@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windowed: no console window flashes when the host activates the COM
+         server. (Use Exe during development if you want console diagnostics.) -->
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>BatteryWidget</RootNamespace>
+    <AssemblyName>BatteryWidgetProvider</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Platforms>x64;arm64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+
+    <!-- Single-project MSIX packaging -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <AppxManifest>Package.appxmanifest</AppxManifest>
+
+    <!-- Bundle the Windows App SDK + .NET runtime so activation needs no
+         machine-wide Windows App Runtime install (robust on a dev box). -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Ship the Adaptive Card template inside the package. -->
+    <Content Include="Templates\battery-card.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Package the MSIX tile/logo assets and widget provider assets so the
+         manifest can locate them. -->
+    <Content Include="Images\**\*.png" />
+    <Content Include="ProviderAssets\**\*.png" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap5 com desktop rescap">
+
+  <Identity
+    Name="BatteryWidget.Provider"
+    Publisher="CN=BatteryWidgetDev"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>Battery Status Widget</DisplayName>
+    <PublisherDisplayName>BatteryWidgetDev</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26300.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="BatteryWidgetProvider.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Battery Status Widget"
+        Description="Shows battery levels for your PC and connected devices."
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Square71x71Logo="Images\SmallTile.png" Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!-- 1. Register the out-of-process COM server (the provider exe). -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="BatteryWidgetProvider.exe" DisplayName="BatteryWidgetProvider">
+              <com:Class Id="55489218-3DF6-4B99-8940-1BD2EA27B12A" DisplayName="Battery Widget Provider" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+
+        <!-- Always-on battery monitor: launched at logon with no args -> runs
+             the alert loop. User can toggle it in Task Manager > Startup apps. -->
+        <desktop:Extension Category="windows.startupTask"
+                           Executable="BatteryWidgetProvider.exe"
+                           EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="BatteryStatusMonitor" Enabled="true"
+                               DisplayName="Battery Status Monitor" />
+        </desktop:Extension>
+
+        <!-- 2. Register as a widget provider and declare the widget(s). -->
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.windows.widgets"
+                             DisplayName="Battery Status Widget"
+                             Id="BatteryWidgetApp"
+                             PublicFolder="Public">
+            <uap3:Properties>
+              <WidgetProvider>
+                <ProviderIcons>
+                  <Icon Path="ProviderAssets\BatteryProvider_Icon.png" />
+                </ProviderIcons>
+                <Activation>
+                  <CreateInstance ClassId="55489218-3DF6-4B99-8940-1BD2EA27B12A" />
+                </Activation>
+                <Definitions>
+                  <Definition Id="Battery_Status_Widget"
+                              DisplayName="Battery Status"
+                              Description="A unified view of battery levels for your PC and connected devices.">
+                    <Capabilities>
+                      <Capability><Size Name="small" /></Capability>
+                      <Capability><Size Name="medium" /></Capability>
+                      <Capability><Size Name="large" /></Capability>
+                    </Capabilities>
+                    <ThemeResources>
+                      <Icons>
+                        <Icon Path="ProviderAssets\Battery_Icon.png" />
+                      </Icons>
+                      <Screenshots>
+                        <Screenshot Path="ProviderAssets\Battery_Screenshot.png" DisplayAltText="Battery Status widget" />
+                      </Screenshots>
+                      <DarkMode />
+                      <LightMode />
+                    </ThemeResources>
+                  </Definition>
+                </Definitions>
+              </WidgetProvider>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="bluetooth" />
+  </Capabilities>
+
+</Package>

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "stretch",
+          "verticalContentAlignment": "center",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "Battery status",
+              "weight": "bolder",
+              "size": "medium",
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "auto",
+          "verticalContentAlignment": "center",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "Updated ${updated}",
+              "isSubtle": true,
+              "size": "small",
+              "horizontalAlignment": "right",
+              "$when": "${$host.widgetSize != \"small\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "spacing": "medium",
+      "$data": "${devices}",
+      "$when": "${kind == \"Pc\" || ($host.widgetSize == \"medium\" && $index < 5) || ($host.widgetSize == \"large\" && $index < 9)}",
+      "separator": true,
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "auto",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${glyph}",
+                  "size": "large"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${name}",
+                  "weight": "bolder",
+                  "wrap": true,
+                  "spacing": "none"
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "${status}",
+                  "isSubtle": true,
+                  "size": "small",
+                  "spacing": "none",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${percentText}",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right",
+                  "color": "${if(isLow, 'attention', if(charging, 'good', 'default'))}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "No other devices reporting battery.",
+      "isSubtle": true,
+      "size": "small",
+      "wrap": true,
+      "spacing": "medium",
+      "$when": "${$host.widgetSize != \"small\" && hasPeripherals == false}"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Resize the widget larger to see all devices",
+      "isSubtle": true,
+      "size": "small",
+      "horizontalAlignment": "center",
+      "wrap": true,
+      "spacing": "small",
+      "$when": "${($host.widgetSize == \"medium\" && count > 5) || ($host.widgetSize == \"large\" && count > 9)}"
+    }
+  ],
+  "actions": [
+    { "type": "Action.Execute", "title": "Refresh", "verb": "refresh" },
+    { "type": "Action.Execute", "title": "⚙ Settings", "verb": "openSettings" }
+  ]
+}
